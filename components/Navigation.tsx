@@ -59,6 +59,46 @@ export default function Navigation() {
             >
               Compressor
             </Link>
+            <Link
+              href="/cropper"
+              className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-xs md:text-sm ${
+                isActive("/cropper")
+                  ? "bg-orange-500/30 text-orange-300 shadow-lg shadow-orange-500/50 transform scale-105"
+                  : "text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm"
+              }`}
+            >
+              Crop
+            </Link>
+            <Link
+              href="/resize"
+              className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-xs md:text-sm ${
+                isActive("/resize")
+                  ? "bg-indigo-500/30 text-indigo-300 shadow-lg shadow-indigo-500/50 transform scale-105"
+                  : "text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm"
+              }`}
+            >
+              Resize
+            </Link>
+            <Link
+              href="/rotate"
+              className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-xs md:text-sm ${
+                isActive("/rotate")
+                  ? "bg-rose-500/30 text-rose-300 shadow-lg shadow-rose-500/50 transform scale-105"
+                  : "text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm"
+              }`}
+            >
+              Rotate
+            </Link>
+            <Link
+              href="/watermark"
+              className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-xs md:text-sm ${
+                isActive("/watermark")
+                  ? "bg-violet-500/30 text-violet-300 shadow-lg shadow-violet-500/50 transform scale-105"
+                  : "text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm"
+              }`}
+            >
+              Watermark
+            </Link>
           </div>
         </div>
       </div>

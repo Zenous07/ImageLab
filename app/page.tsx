@@ -6,7 +6,7 @@ export default function Home() {
     {
       id: 1,
       title: "Image Filters",
-      description: "Brightness, contrast, saturation, blur, grayscale, and sepia effects.",
+      description: "Professional filters with undo/redo, custom presets, and number controls.",
       icon: "🎨",
       href: "/filters",
       gradient: "gradient-primary",
@@ -15,7 +15,7 @@ export default function Home() {
     {
       id: 2,
       title: "Background Changer",
-      description: "Replace background colors with precision and adjustable tolerance.",
+      description: "Replace background colors with eye dropper tool for precise selection.",
       icon: "🎯",
       href: "/bg-changer",
       gradient: "gradient-warning",
@@ -29,6 +29,42 @@ export default function Home() {
       href: "/compressor",
       gradient: "gradient-info",
       shadowColor: "shadow-green-500/50",
+    },
+    {
+      id: 4,
+      title: "Image Cropper",
+      description: "Crop with aspect ratio presets (16:9, 1:1, 4:3) and freeform options.",
+      icon: "✂️",
+      href: "/cropper",
+      gradient: "bg-gradient-to-br from-orange-500 to-orange-600",
+      shadowColor: "shadow-orange-500/50",
+    },
+    {
+      id: 5,
+      title: "Image Resize",
+      description: "Resize images with aspect ratio control and size presets.",
+      icon: "📐",
+      href: "/resize",
+      gradient: "bg-gradient-to-br from-indigo-500 to-indigo-600",
+      shadowColor: "shadow-indigo-500/50",
+    },
+    {
+      id: 6,
+      title: "Rotate & Flip",
+      description: "Rotate any angle and flip horizontally or vertically.",
+      icon: "🔄",
+      href: "/rotate",
+      gradient: "bg-gradient-to-br from-rose-500 to-rose-600",
+      shadowColor: "shadow-rose-500/50",
+    },
+    {
+      id: 7,
+      title: "Watermark & Text",
+      description: "Add custom text overlays with position presets and opacity control.",
+      icon: "📝",
+      href: "/watermark",
+      gradient: "bg-gradient-to-br from-violet-500 to-violet-600",
+      shadowColor: "shadow-violet-500/50",
     },
   ];
 
@@ -63,7 +99,7 @@ export default function Home() {
           </div>
 
           {/* Tools Grid */}
-          <div className="grid md:grid-cols-3 gap-8 mb-20">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
             {tools.map((tool, idx) => (
               <Link
                 key={tool.id}

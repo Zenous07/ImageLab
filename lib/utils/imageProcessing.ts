@@ -287,3 +287,146 @@ export function compressImage(
 
   return compressed;
 }
+
+// Crop image
+export function cropImage(
+  canvas: HTMLCanvasElement,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): HTMLCanvasElement {
+  const cropped = document.createElement("canvas");
+  cropped.width = width;
+  cropped.height = height;
+  const ctx = cropped.getContext("2d");
+  if (ctx) {
+    ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+  }
+  return cropped;
+}
+
+// Resize image
+export function resizeImage(
+  canvas: HTMLCanvasElement,
+  width: number,
+  height: number
+): HTMLCanvasElement {
+  const resized = document.createElement("canvas");
+  resized.width = width;
+  resized.height = height;
+  const ctx = resized.getContext("2d");
+  if (ctx) {
+    ctx.drawImage(canvas, 0, 0, width, height);
+  }
+  return resized;
+}
+
+// Rotate image
+export function rotateImage(
+  canvas: HTMLCanvasElement,
+  degrees: number
+): HTMLCanvasElement {
+  const radians = (degrees * Math.PI) / 180;
+  const cos = Math.cos(radians);
+  const sin = Math.sin(radians);
+
+  const width = Math.abs(canvas.width * cos) + Math.abs(canvas.height * sin);
+  const height = Math.abs(canvas.width * sin) + Math.abs(canvas.height * cos);
+
+  const rotated = document.createElement("canvas");
+  rotated.width = width;
+  rotated.height = height;
+
+  const ctx = rotated.getContext("2d");
+  if (ctx) {
+    ctx.translate(width / 2, height / 2);
+    ctx.rotate(radians);
+    ctx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+  }
+
+  return rotated;
+}
+
+// Flip image
+export function flipImage(
+  canvas: HTMLCanvasElement,
+  direction: "horizontal" | "vertical"
+): HTMLCanvasElement {
+  const flipped = document.createElement("canvas");
+  flipped.width = canvas.width;
+  flipped.height = canvas.height;
+
+  const ctx = flipped.getContext("2d");
+  if (ctx) {
+    if (direction === "horizontal") {
+      ctx.scale(-1, 1);
+      ctx.drawImage(canvas, -canvas.width, 0);
+    } else {
+      ctx.scale(1, -1);
+      ctx.drawImage(canvas, 0, -canvas.height);
+    }
+  }
+
+  return flipped;
+}
+
+// Add watermark text
+export function addWatermark(
+  canvas: HTMLCanvasElement,
+  text: string,
+  x: number,
+  y: number,
+  fontSize: number,
+  color: string,
+  opacity: number
+): HTMLCanvasElement {
+  const watermarked = document.createElement("canvas");
+  watermarked.width = canvas.width;
+  watermarked.height = canvas.height;
+
+  const ctx = watermarked.getContext("2d");
+  if (ctx) {
+    ctx.drawImage(canvas, 0, 0);
+    ctx.globalAlpha = opacity / 100;
+    ctx.font = `bold ${fontSize}px Arial`;
+    ctx.fillStyle = color;
+    ctx.textAlign = "start";
+    ctx.fillText(text, x, y);
+  }
+
+  return watermarked;
+}
+
+// Download with specific format
+export async function downloadImage(
+  canvas: HTMLCanvasElement,
+  filename: string,
+  format: "png" | "jpg" | "webp" = "jpg",
+  quality: number = 0.95
+): Promise<void> {
+  const mimeType = format === "png" ? "image/png" : format === "jpg" ? "image/jpeg" : "image/webp";
+  const extension = format === "jpg" ? "jpg" : format;
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${filename}.${extension}`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          resolve();
+        } else {
+          reject(new Error("Failed to download image"));
+        }
+      },
+      mimeType,
+      quality
+    );
+  });
+}

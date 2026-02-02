@@ -8,12 +8,29 @@ import {
   getFilterCSS,
   canvasToBlob,
   downloadBlob,
+  downloadImage,
   filterPresets,
 } from "@/lib/utils/imageProcessing";
+
+interface HistoryState {
+  settings: FilterSettings;
+}
 
 export default function FiltersPage() {
   const [image, setImage] = useState<string | null>(null);
   const [settings, setSettings] = useState<FilterSettings>(defaultFilterSettings);
+  const [history, setHistory] = useState<HistoryState[]>([{ settings: defaultFilterSettings }]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+  const [customPresets, setCustomPresets] = useState<Record<string, FilterSettings>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('customFilterPresets');
+      return saved ? JSON.parse(saved) : {};
+    }
+    return {};
+  });
+  const [presetName, setPresetName] = useState("");
+  const [exportFormat, setExportFormat] = useState<"jpg" | "png" | "webp">("jpg");
+  const [exportQuality, setExportQuality] = useState(95);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -24,8 +41,34 @@ export default function FiltersPage() {
       reader.onload = (event) => {
         setImage(event.target?.result as string);
         setSettings(defaultFilterSettings);
+        setHistory([{ settings: defaultFilterSettings }]);
+        setHistoryIndex(0);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const updateSettings = (newSettings: FilterSettings) => {
+    setSettings(newSettings);
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push({ settings: newSettings });
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  };
+
+  const undo = () => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setSettings(history[newIndex].settings);
+    }
+  };
+
+  const redo = () => {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      setSettings(history[newIndex].settings);
     }
   };
 
@@ -40,7 +83,6 @@ export default function FiltersPage() {
         canvas.width = img.width;
         canvas.height = img.height;
 
-        // Apply filters
         const filterCSS = getFilterCSS(settings);
         ctx.filter = filterCSS;
         ctx.drawImage(img, 0, 0);
@@ -51,13 +93,32 @@ export default function FiltersPage() {
 
   const handleDownload = async () => {
     if (canvasRef.current) {
-      const blob = await canvasToBlob(canvasRef.current, 0.95);
-      downloadBlob(blob, "filtered-image.jpg");
+      await downloadImage(canvasRef.current, "filtered-image", exportFormat, exportQuality / 100);
     }
   };
 
   const handleReset = () => {
-    setSettings(defaultFilterSettings);
+    updateSettings(defaultFilterSettings);
+  };
+
+  const savePreset = () => {
+    if (presetName.trim()) {
+      const updated = { ...customPresets, [presetName]: settings };
+      setCustomPresets(updated);
+      localStorage.setItem('customFilterPresets', JSON.stringify(updated));
+      setPresetName("");
+    }
+  };
+
+  const loadPreset = (preset: FilterSettings) => {
+    updateSettings(preset);
+  };
+
+  const deletePreset = (name: string) => {
+    const updated = { ...customPresets };
+    delete updated[name];
+    setCustomPresets(updated);
+    localStorage.setItem('customFilterPresets', JSON.stringify(updated));
   };
 
   return (
@@ -77,7 +138,7 @@ export default function FiltersPage() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Controls Panel */}
             <div className="lg:col-span-1 animate-slideInFromLeft">
-              <div className="glass-effect rounded-2xl p-8 sticky top-20 backdrop-blur-xl">
+              <div className="glass-effect rounded-2xl p-8 sticky top-20 backdrop-blur-xl max-h-[85vh] overflow-y-auto">
                 <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-2">
                   <span>⚙️</span> Controls
                 </h2>
@@ -98,6 +159,24 @@ export default function FiltersPage() {
 
                 {image && (
                   <>
+                    {/* Undo/Redo */}
+                    <div className="mb-8 flex gap-2">
+                      <button
+                        onClick={undo}
+                        disabled={historyIndex === 0}
+                        className="flex-1 px-3 py-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-all duration-300 text-sm"
+                      >
+                        ↶ Undo
+                      </button>
+                      <button
+                        onClick={redo}
+                        disabled={historyIndex === history.length - 1}
+                        className="flex-1 px-3 py-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-all duration-300 text-sm"
+                      >
+                        ↷ Redo
+                      </button>
+                    </div>
+
                     {/* Presets */}
                     <div className="mb-8 pb-8 border-b border-white/10">
                       <label className="block text-sm font-bold text-white/80 mb-4 uppercase tracking-wide">
@@ -107,7 +186,7 @@ export default function FiltersPage() {
                         {filterPresets.map((preset) => (
                           <button
                             key={preset.name}
-                            onClick={() => setSettings(preset.settings)}
+                            onClick={() => updateSettings(preset.settings)}
                             className={`px-3 py-2 rounded-lg font-bold text-sm transition-all duration-300 transform hover:scale-105 active:scale-95 ${
                               JSON.stringify(settings) === JSON.stringify(preset.settings)
                                 ? "gradient-primary text-white shadow-lg shadow-purple-500/50 border border-purple-400"
@@ -121,15 +200,65 @@ export default function FiltersPage() {
                       </div>
                     </div>
 
+                    {/* Custom Presets */}
+                    <div className="mb-8 pb-8 border-b border-white/10">
+                      <label className="block text-sm font-bold text-white/80 mb-3 uppercase tracking-wide">
+                        ⭐ My Presets
+                      </label>
+                      <div className="flex gap-2 mb-3">
+                        <input
+                          type="text"
+                          value={presetName}
+                          onChange={(e) => setPresetName(e.target.value)}
+                          placeholder="Preset name"
+                          className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white/70 text-sm placeholder-white/40"
+                        />
+                        <button
+                          onClick={savePreset}
+                          className="px-3 py-2 gradient-primary text-white font-bold rounded-lg transition-all duration-300 text-sm"
+                        >
+                          Save
+                        </button>
+                      </div>
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {Object.entries(customPresets).map(([name, preset]) => (
+                          <div key={name} className="flex gap-2 items-center">
+                            <button
+                              onClick={() => loadPreset(preset)}
+                              className="flex-1 px-3 py-2 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg transition-all text-sm text-left truncate"
+                            >
+                              {name}
+                            </button>
+                            <button
+                              onClick={() => deletePreset(name)}
+                              className="px-3 py-2 bg-red-500/20 hover:bg-red-500/40 text-red-300 font-bold rounded-lg transition-all text-sm"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                     {/* Brightness */}
-                    <div className="mb-8">
-                      <div className="flex justify-between mb-3">
+                    <div className="mb-6">
+                      <div className="flex justify-between mb-3 items-center">
                         <label className="text-sm font-bold text-white uppercase tracking-wide">
                           ☀️ Brightness
                         </label>
-                        <span className="text-sm font-bold gradient-primary text-gradient">
-                          {settings.brightness}%
-                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="200"
+                          value={settings.brightness}
+                          onChange={(e) =>
+                            updateSettings({
+                              ...settings,
+                              brightness: parseInt(e.target.value) || 100,
+                            })
+                          }
+                          className="w-16 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm text-center"
+                        />
                       </div>
                       <input
                         type="range"
@@ -137,7 +266,7 @@ export default function FiltersPage() {
                         max="200"
                         value={settings.brightness}
                         onChange={(e) =>
-                          setSettings({
+                          updateSettings({
                             ...settings,
                             brightness: parseInt(e.target.value),
                           })
@@ -147,14 +276,24 @@ export default function FiltersPage() {
                     </div>
 
                     {/* Contrast */}
-                    <div className="mb-8">
-                      <div className="flex justify-between mb-3">
+                    <div className="mb-6">
+                      <div className="flex justify-between mb-3 items-center">
                         <label className="text-sm font-bold text-white uppercase tracking-wide">
                           ◆ Contrast
                         </label>
-                        <span className="text-sm font-bold gradient-success text-gradient">
-                          {settings.contrast}%
-                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="200"
+                          value={settings.contrast}
+                          onChange={(e) =>
+                            updateSettings({
+                              ...settings,
+                              contrast: parseInt(e.target.value) || 100,
+                            })
+                          }
+                          className="w-16 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm text-center"
+                        />
                       </div>
                       <input
                         type="range"
@@ -162,7 +301,7 @@ export default function FiltersPage() {
                         max="200"
                         value={settings.contrast}
                         onChange={(e) =>
-                          setSettings({
+                          updateSettings({
                             ...settings,
                             contrast: parseInt(e.target.value),
                           })
@@ -172,14 +311,24 @@ export default function FiltersPage() {
                     </div>
 
                     {/* Saturation */}
-                    <div className="mb-8">
-                      <div className="flex justify-between mb-3">
+                    <div className="mb-6">
+                      <div className="flex justify-between mb-3 items-center">
                         <label className="text-sm font-bold text-white uppercase tracking-wide">
                           🎨 Saturation
                         </label>
-                        <span className="text-sm font-bold gradient-warning text-gradient">
-                          {settings.saturation}%
-                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="200"
+                          value={settings.saturation}
+                          onChange={(e) =>
+                            updateSettings({
+                              ...settings,
+                              saturation: parseInt(e.target.value) || 100,
+                            })
+                          }
+                          className="w-16 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm text-center"
+                        />
                       </div>
                       <input
                         type="range"
@@ -187,7 +336,7 @@ export default function FiltersPage() {
                         max="200"
                         value={settings.saturation}
                         onChange={(e) =>
-                          setSettings({
+                          updateSettings({
                             ...settings,
                             saturation: parseInt(e.target.value),
                           })
@@ -197,14 +346,24 @@ export default function FiltersPage() {
                     </div>
 
                     {/* Blur */}
-                    <div className="mb-8">
-                      <div className="flex justify-between mb-3">
+                    <div className="mb-6">
+                      <div className="flex justify-between mb-3 items-center">
                         <label className="text-sm font-bold text-white uppercase tracking-wide">
                           💨 Blur
                         </label>
-                        <span className="text-sm font-bold text-cyan-400">
-                          {settings.blur}px
-                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="20"
+                          value={settings.blur}
+                          onChange={(e) =>
+                            updateSettings({
+                              ...settings,
+                              blur: parseInt(e.target.value) || 0,
+                            })
+                          }
+                          className="w-16 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm text-center"
+                        />
                       </div>
                       <input
                         type="range"
@@ -212,7 +371,7 @@ export default function FiltersPage() {
                         max="20"
                         value={settings.blur}
                         onChange={(e) =>
-                          setSettings({
+                          updateSettings({
                             ...settings,
                             blur: parseInt(e.target.value),
                           })
@@ -222,14 +381,24 @@ export default function FiltersPage() {
                     </div>
 
                     {/* Grayscale */}
-                    <div className="mb-8">
-                      <div className="flex justify-between mb-3">
+                    <div className="mb-6">
+                      <div className="flex justify-between mb-3 items-center">
                         <label className="text-sm font-bold text-white uppercase tracking-wide">
                           ⚪ Grayscale
                         </label>
-                        <span className="text-sm font-bold text-gray-300">
-                          {settings.grayscale}%
-                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={settings.grayscale}
+                          onChange={(e) =>
+                            updateSettings({
+                              ...settings,
+                              grayscale: parseInt(e.target.value) || 0,
+                            })
+                          }
+                          className="w-16 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm text-center"
+                        />
                       </div>
                       <input
                         type="range"
@@ -237,7 +406,7 @@ export default function FiltersPage() {
                         max="100"
                         value={settings.grayscale}
                         onChange={(e) =>
-                          setSettings({
+                          updateSettings({
                             ...settings,
                             grayscale: parseInt(e.target.value),
                           })
@@ -248,13 +417,23 @@ export default function FiltersPage() {
 
                     {/* Sepia */}
                     <div className="mb-8">
-                      <div className="flex justify-between mb-3">
+                      <div className="flex justify-between mb-3 items-center">
                         <label className="text-sm font-bold text-white uppercase tracking-wide">
                           🟤 Sepia
                         </label>
-                        <span className="text-sm font-bold text-amber-300">
-                          {settings.sepia}%
-                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={settings.sepia}
+                          onChange={(e) =>
+                            updateSettings({
+                              ...settings,
+                              sepia: parseInt(e.target.value) || 0,
+                            })
+                          }
+                          className="w-16 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm text-center"
+                        />
                       </div>
                       <input
                         type="range"
@@ -262,7 +441,7 @@ export default function FiltersPage() {
                         max="100"
                         value={settings.sepia}
                         onChange={(e) =>
-                          setSettings({
+                          updateSettings({
                             ...settings,
                             sepia: parseInt(e.target.value),
                           })
@@ -271,8 +450,40 @@ export default function FiltersPage() {
                       />
                     </div>
 
+                    {/* Export Options */}
+                    <div className="mb-8 pb-8 border-b border-white/10">
+                      <label className="block text-sm font-bold text-white mb-3 uppercase tracking-wide">
+                        💾 Export Options
+                      </label>
+                      <div className="space-y-3">
+                        <select
+                          value={exportFormat}
+                          onChange={(e) => setExportFormat(e.target.value as any)}
+                          className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm"
+                        >
+                          <option value="jpg">JPG (Smaller size)</option>
+                          <option value="png">PNG (Lossless)</option>
+                          <option value="webp">WebP (Best quality)</option>
+                        </select>
+                        <div>
+                          <div className="flex justify-between mb-2 text-sm">
+                            <label className="font-bold text-white">Quality</label>
+                            <span className="text-white/60">{exportQuality}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="10"
+                            max="100"
+                            value={exportQuality}
+                            onChange={(e) => setExportQuality(parseInt(e.target.value))}
+                            className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Buttons */}
-                    <div className="flex gap-4 mt-10 pt-8 border-t border-white/10">
+                    <div className="flex gap-4">
                       <button
                         onClick={handleReset}
                         className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95 border border-white/20 hover:border-white/40"
