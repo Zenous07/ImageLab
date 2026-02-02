@@ -430,3 +430,212 @@ export async function downloadImage(
     );
   });
 }
+
+// Background Removal Algorithms
+
+// 1. Color-based removal (simple threshold)
+export function removeBackgroundColorBased(
+  imageData: ImageData,
+  targetColor: RGBColor,
+  threshold: number,
+  softness: number = 0
+): ImageData {
+  const data = imageData.data;
+  const result = new ImageData(
+    new Uint8ClampedArray(data),
+    imageData.width,
+    imageData.height
+  );
+  const resultData = result.data;
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+
+    const pixelColor: RGBColor = { r, g, b };
+    const distance = colorDistance(pixelColor, targetColor);
+
+    if (distance < threshold) {
+      const alpha = Math.max(0, 255 - (distance / threshold) * 255 * (1 + softness / 100));
+      resultData[i + 3] = Math.floor(alpha);
+    }
+  }
+
+  return result;
+}
+
+// 2. Clustering-based removal (groups similar colors)
+export function removeBackgroundClustering(
+  imageData: ImageData,
+  clusterThreshold: number,
+  iterations: number = 5,
+  softness: number = 0
+): ImageData {
+  const data = imageData.data;
+  const width = imageData.width;
+  const height = imageData.height;
+
+  const result = new ImageData(
+    new Uint8ClampedArray(data),
+    width,
+    height
+  );
+  const resultData = result.data;
+
+  // Find the most common color (background)
+  const colorMap: Record<string, number> = {};
+  for (let i = 0; i < data.length; i += 4) {
+    const key = `${data[i]},${data[i + 1]},${data[i + 2]}`;
+    colorMap[key] = (colorMap[key] || 0) + 1;
+  }
+
+  const bgColor = Object.entries(colorMap).reduce((a, b) => (b[1] > a[1] ? b : a))[0].split(",").map(Number);
+  const backgroundColor: RGBColor = { r: bgColor[0], g: bgColor[1], b: bgColor[2] };
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+
+    const pixelColor: RGBColor = { r, g, b };
+    const distance = colorDistance(pixelColor, backgroundColor);
+
+    if (distance < clusterThreshold) {
+      const alpha = Math.max(0, 255 - (distance / clusterThreshold) * 255 * (1 + softness / 100));
+      resultData[i + 3] = Math.floor(alpha);
+    }
+  }
+
+  return result;
+}
+
+// 3. Contrast-based removal (edge detection)
+export function removeBackgroundContrast(
+  imageData: ImageData,
+  contrastThreshold: number,
+  softness: number = 0
+): ImageData {
+  const data = imageData.data;
+  const width = imageData.width;
+  const height = imageData.height;
+
+  const result = new ImageData(
+    new Uint8ClampedArray(data),
+    width,
+    height
+  );
+  const resultData = result.data;
+
+  // Calculate edges and contrast
+  for (let i = 0; i < height; i++) {
+    for (let j = 0; j < width; j++) {
+      const idx = (i * width + j) * 4;
+
+      let contrast = 0;
+      let count = 0;
+
+      // Check neighbors
+      for (let di = -1; di <= 1; di++) {
+        for (let dj = -1; dj <= 1; dj++) {
+          if (di === 0 && dj === 0) continue;
+          const ni = i + di;
+          const nj = j + dj;
+
+          if (ni >= 0 && ni < height && nj >= 0 && nj < width) {
+            const nidx = (ni * width + nj) * 4;
+            const diff = Math.abs(data[idx] - data[nidx]) +
+                        Math.abs(data[idx + 1] - data[nidx + 1]) +
+                        Math.abs(data[idx + 2] - data[nidx + 2]);
+            contrast += diff;
+            count++;
+          }
+        }
+      }
+
+      contrast = count > 0 ? contrast / count / 3 : 0;
+
+      if (contrast < contrastThreshold) {
+        const alpha = Math.max(0, 255 - (contrastThreshold - contrast) / contrastThreshold * 255 * (1 + softness / 100));
+        resultData[idx + 3] = Math.floor(alpha);
+      }
+    }
+  }
+
+  return result;
+}
+
+// 4. Hybrid/AI-like removal (combines all methods)
+export function removeBackgroundHybrid(
+  imageData: ImageData,
+  colorThreshold: number,
+  contrastThreshold: number,
+  softness: number = 0
+): ImageData {
+  const data = imageData.data;
+  const width = imageData.width;
+  const height = imageData.height;
+
+  const result = new ImageData(
+    new Uint8ClampedArray(data),
+    width,
+    height
+  );
+  const resultData = result.data;
+
+  // Find background color
+  const colorMap: Record<string, number> = {};
+  for (let i = 0; i < data.length; i += 4) {
+    const key = `${data[i]},${data[i + 1]},${data[i + 2]}`;
+    colorMap[key] = (colorMap[key] || 0) + 1;
+  }
+
+  const bgColor = Object.entries(colorMap).reduce((a, b) => (b[1] > a[1] ? b : a))[0].split(",").map(Number);
+  const backgroundColor: RGBColor = { r: bgColor[0], g: bgColor[1], b: bgColor[2] };
+
+  // Apply hybrid detection
+  for (let i = 0; i < height; i++) {
+    for (let j = 0; j < width; j++) {
+      const idx = (i * width + j) * 4;
+
+      const r = data[idx];
+      const g = data[idx + 1];
+      const b = data[idx + 2];
+      const pixelColor: RGBColor = { r, g, b };
+      const colorDist = colorDistance(pixelColor, backgroundColor);
+
+      // Calculate contrast
+      let contrast = 0;
+      let count = 0;
+      for (let di = -1; di <= 1; di++) {
+        for (let dj = -1; dj <= 1; dj++) {
+          if (di === 0 && dj === 0) continue;
+          const ni = i + di;
+          const nj = j + dj;
+
+          if (ni >= 0 && ni < height && nj >= 0 && nj < width) {
+            const nidx = (ni * width + nj) * 4;
+            const diff = Math.abs(data[idx] - data[nidx]) +
+                        Math.abs(data[idx + 1] - data[nidx + 1]) +
+                        Math.abs(data[idx + 2] - data[nidx + 2]);
+            contrast += diff;
+            count++;
+          }
+        }
+      }
+      contrast = count > 0 ? contrast / count / 3 : 0;
+
+      // Combine both methods
+      const colorScore = colorDist < colorThreshold ? 1 - (colorDist / colorThreshold) : 0;
+      const contrastScore = contrast < contrastThreshold ? 1 - (contrast / contrastThreshold) : 0;
+      const combined = (colorScore + contrastScore) / 2;
+
+      if (combined > 0.3) {
+        const alpha = 255 * (1 - combined) * (1 + softness / 100);
+        resultData[idx + 3] = Math.floor(Math.max(0, Math.min(255, alpha)));
+      }
+    }
+  }
+
+  return result;
+}

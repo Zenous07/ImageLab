@@ -2,11 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 export default function Navigation() {
   const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
 
   const isActive = (path: string) => pathname === path;
+
+  const navLinks = [
+    { href: "/", label: "Home", emoji: "🏠" },
+    { href: "/filters", label: "Filters", emoji: "🎨" },
+    { href: "/bg-changer", label: "BG Changer", emoji: "🎯" },
+    { href: "/compressor", label: "Compressor", emoji: "📦" },
+    { href: "/cropper", label: "Crop", emoji: "✂️" },
+    { href: "/resize", label: "Resize", emoji: "📐" },
+    { href: "/rotate", label: "Rotate", emoji: "🔄" },
+    { href: "/watermark", label: "Watermark", emoji: "📝" },
+    { href: "/bg-remover", label: "BG Remover", emoji: "🎭" },
+  ];
 
   return (
     <nav className="sticky top-0 z-50 glass-effect border-b border-white/10">
@@ -14,93 +28,66 @@ export default function Navigation() {
         <div className="flex items-center justify-between">
           <Link 
             href="/" 
-            className="text-3xl font-bold text-gradient hover:opacity-80 transition-opacity duration-300 transform hover:scale-105"
+            className="text-3xl font-bold text-gradient hover:opacity-80 transition-opacity duration-300 transform hover:scale-105 font-[var(--font-space-grotesk)]"
           >
             ✨ ImageLab
           </Link>
-          <div className="flex gap-2 md:gap-6">
-            <Link
-              href="/"
-              className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${
-                isActive("/")
-                  ? "bg-gradient-primary text-white shadow-lg shadow-purple-500/50 transform scale-105"
-                  : "text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm"
-              }`}
-            >
-              Home
-            </Link>
-            <Link
-              href="/filters"
-              className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${
-                isActive("/filters")
-                  ? "bg-gradient-success text-white shadow-lg shadow-pink-500/50 transform scale-105"
-                  : "text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm"
-              }`}
-            >
-              Filters
-            </Link>
-            <Link
-              href="/bg-changer"
-              className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${
-                isActive("/bg-changer")
-                  ? "bg-gradient-warning text-white shadow-lg shadow-blue-500/50 transform scale-105"
-                  : "text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm"
-              }`}
-            >
-              BG Changer
-            </Link>
-            <Link
-              href="/compressor"
-              className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${
-                isActive("/compressor")
-                  ? "bg-gradient-info text-white shadow-lg shadow-green-500/50 transform scale-105"
-                  : "text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm"
-              }`}
-            >
-              Compressor
-            </Link>
-            <Link
-              href="/cropper"
-              className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-xs md:text-sm ${
-                isActive("/cropper")
-                  ? "bg-orange-500/30 text-orange-300 shadow-lg shadow-orange-500/50 transform scale-105"
-                  : "text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm"
-              }`}
-            >
-              Crop
-            </Link>
-            <Link
-              href="/resize"
-              className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-xs md:text-sm ${
-                isActive("/resize")
-                  ? "bg-indigo-500/30 text-indigo-300 shadow-lg shadow-indigo-500/50 transform scale-105"
-                  : "text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm"
-              }`}
-            >
-              Resize
-            </Link>
-            <Link
-              href="/rotate"
-              className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-xs md:text-sm ${
-                isActive("/rotate")
-                  ? "bg-rose-500/30 text-rose-300 shadow-lg shadow-rose-500/50 transform scale-105"
-                  : "text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm"
-              }`}
-            >
-              Rotate
-            </Link>
-            <Link
-              href="/watermark"
-              className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-xs md:text-sm ${
-                isActive("/watermark")
-                  ? "bg-violet-500/30 text-violet-300 shadow-lg shadow-violet-500/50 transform scale-105"
-                  : "text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm"
-              }`}
-            >
-              Watermark
-            </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex gap-2 lg:gap-4">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`px-3 lg:px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-xs lg:text-sm ${
+                  isActive(link.href)
+                    ? "bg-gradient-primary text-white shadow-lg shadow-purple-500/50 transform scale-105"
+                    : "text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm"
+                }`}
+              >
+                <span className="mr-1">{link.emoji}</span>
+                {link.label}
+              </Link>
+            ))}
           </div>
+
+          {/* Hamburger Button */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="md:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-all"
+          >
+            {isOpen ? (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
         </div>
+
+        {/* Mobile Navigation */}
+        {isOpen && (
+          <div className="md:hidden mt-4 pb-4 space-y-2 animate-fadeInDown">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setIsOpen(false)}
+                className={`block px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${
+                  isActive(link.href)
+                    ? "bg-gradient-primary text-white shadow-lg"
+                    : "text-white/70 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <span className="mr-2">{link.emoji}</span>
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </nav>
   );
