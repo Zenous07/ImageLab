@@ -1,6 +1,6 @@
 "use client";
 
-import Navigation from "@/components/Navigation";
+
 import { useState, useRef, useEffect } from "react";
 import {
   formatFileSize,
@@ -118,9 +118,7 @@ export default function CompressorPage() {
     : 0;
 
   return (
-    <>
-      <Navigation />
-      <main className="min-h-screen pb-16">
+    <main className="min-h-screen pb-16 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="mb-12 animate-fadeInDown">
             <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
@@ -300,6 +298,5 @@ export default function CompressorPage() {
           </div>
         </div>
       </main>
-    </>
   );
 }

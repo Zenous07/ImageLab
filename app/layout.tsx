@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Space_Mono } from "next/font/google";
 import "./globals.css";
+import Sidebar from "@/components/Sidebar";
+import TopBar from "@/components/TopBar";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -15,8 +17,8 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ImageLab - Image Processing Web App",
-  description: "Multi-page image processing application with filters, background replacement, and compression",
+  title: "ImageLab - Premium Image Processing Studio",
+  description: "Professional image processing with filters, background removal, compression, and more",
 };
 
 export default function RootLayout({
@@ -27,9 +29,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${spaceGrotesk.variable} ${spaceMono.variable} antialiased bg-slate-50`}
+        className={`${spaceGrotesk.variable} ${spaceMono.variable} antialiased bg-slate-950`}
       >
-        {children}
+        <Sidebar />
+        <TopBar />
+        <main className="ml-64 mt-16">
+          {children}
+        </main>
       </body>
     </html>
   );

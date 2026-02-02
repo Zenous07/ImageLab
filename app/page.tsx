@@ -1,6 +1,5 @@
 "use client";
 
-import Navigation from "@/components/Navigation";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
@@ -187,17 +186,15 @@ export default function Home() {
   }, []);
 
   return (
-    <>
-      <Navigation />
-      <main ref={containerRef} className="min-h-screen pb-20 relative overflow-hidden">
-        {/* Animated background gradients */}
-        <div className="fixed inset-0 -z-10">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-purple-600/30 to-transparent rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-600/30 to-transparent rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 left-1/3 w-96 h-96 bg-gradient-to-br from-indigo-600/20 to-transparent rounded-full blur-3xl"></div>
-        </div>
+    <main ref={containerRef} className="min-h-screen pb-20 relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Animated background gradients */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-[#d4af37]/20 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gradient-to-br from-[#00d9ff]/20 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/3 w-96 h-96 bg-gradient-to-br from-[#8b5cf6]/10 to-transparent rounded-full blur-3xl"></div>
+      </div>
 
-        <div className="max-w-7xl mx-auto px-6 py-16">
+      <div className="max-w-7xl mx-auto px-6 py-16">
           {/* Hero Section */}
           <div className="text-center mb-20">
             <h1 className="hero-title text-6xl md:text-7xl font-bold mb-6 text-white leading-tight font-[var(--font-space-grotesk)]">
@@ -322,15 +319,14 @@ export default function Home() {
               </p>
               <Link
                 href="/filters"
-                className="inline-block px-8 py-4 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 font-bold rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transform hover:scale-105 transition-all duration-300 font-[var(--font-space-grotesk)]"
+                className="inline-block px-8 py-4 bg-gradient-to-r from-[#d4af37] to-[#00d9ff] text-slate-900 font-bold rounded-lg hover:shadow-lg hover:shadow-[#d4af37]/50 transform hover:scale-105 transition-all duration-300 font-[var(--font-space-grotesk)]"
               >
                 ✨ Start Now
               </Link>
             </div>
           </div>
         </div>
-      </main>
-    </>
+    </main>
   );
 }
 
