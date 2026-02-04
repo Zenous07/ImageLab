@@ -3,6 +3,8 @@ import { Space_Grotesk, Space_Mono } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
+import { SidebarProvider } from "@/context/SidebarContext";
+import LayoutContent from "@/components/LayoutContent";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -27,15 +29,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${spaceGrotesk.variable} ${spaceMono.variable} antialiased bg-slate-950`}
+        className={`${spaceGrotesk.variable} ${spaceMono.variable} antialiased bg-slate-950 overflow-x-hidden`}
       >
-        <Sidebar />
-        <TopBar />
-        <main className="ml-64 mt-16">
-          {children}
-        </main>
+        <SidebarProvider>
+          <Sidebar />
+          <TopBar />
+          <LayoutContent>{children}</LayoutContent>
+        </SidebarProvider>
       </body>
     </html>
   );

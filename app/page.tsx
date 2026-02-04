@@ -3,10 +3,14 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
 
   const tools = [
     {
@@ -47,7 +51,7 @@ export default function Home() {
       href: "/bg-remover",
       gradient: "bg-gradient-to-br from-[#8b5cf6] via-[#6d28d9] to-[#00d9ff]",
       shadowColor: "shadow-[#8b5cf6]/40",
-      size: "md:col-span-2",
+      size: "md:col-span-1",
     },
     {
       id: 5,
@@ -92,109 +96,114 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    // Set initial states to visible
-    gsap.set(".hero-title", { opacity: 1, y: 0 });
-    gsap.set(".hero-desc", { opacity: 1, y: 0 });
-    gsap.set(".feature-badge", { opacity: 1, scale: 1 });
-    gsap.set(".tool-card", { opacity: 1, y: 0 });
-    gsap.set(".feature-card", { opacity: 1, y: 0 });
-    gsap.set(".cta-section", { opacity: 1, y: 0 });
+    if (!containerRef.current) return;
 
-    // Hero section animation
-    gsap.from(".hero-title", {
+    // Hero animations with stagger
+    gsap.set(".hero-title, .hero-desc, .feature-badge", { opacity: 1, y: 0, scale: 1 });
+    
+    const heroTl = gsap.timeline();
+    heroTl.from(".hero-title", {
       opacity: 0,
       y: 30,
-      duration: 1,
-      ease: "power2.out",
-    });
+      duration: 0.8,
+      ease: "power3.out",
+    }, 0);
 
-    gsap.from(".hero-desc", {
+    heroTl.from(".hero-desc", {
       opacity: 0,
       y: 20,
-      duration: 0.8,
-      delay: 0.2,
+      duration: 0.6,
       ease: "power2.out",
-    });
+    }, 0.2);
 
-    // Feature badges animation
-    gsap.from(".feature-badge", {
+    heroTl.from(".feature-badge", {
       opacity: 0,
       scale: 0.8,
       duration: 0.5,
-      stagger: 0.1,
-      delay: 0.4,
       ease: "back.out",
-    });
+      stagger: 0.1,
+    }, 0.4);
 
     // Tool cards stagger animation
+    gsap.set(".tool-card", { opacity: 1, y: 0 });
     gsap.from(".tool-card", {
       opacity: 0,
       y: 40,
-      duration: 0.6,
-      stagger: 0.08,
-      delay: 0.6,
+      duration: 0.8,
       ease: "power2.out",
+      stagger: 0.12,
+      scrollTrigger: {
+        trigger: toolsRef.current,
+        start: "top center+=100",
+        toggleActions: "play none none reverse",
+      },
     });
 
-    // Add hover animation to tool cards
+    // Feature cards scroll animation
+    gsap.set(".feature-card", { opacity: 1, y: 0 });
+    gsap.from(".feature-card", {
+      opacity: 0,
+      y: 30,
+      duration: 0.6,
+      ease: "power2.out",
+      stagger: 0.1,
+      scrollTrigger: {
+        trigger: ".features-section",
+        start: "top center+=100",
+        toggleActions: "play none none reverse",
+      },
+    });
+
+    // CTA section animation
+    gsap.set(".cta-section", { opacity: 1, y: 0 });
+    gsap.from(".cta-section", {
+      opacity: 0,
+      y: 40,
+      duration: 0.8,
+      ease: "power2.out",
+      scrollTrigger: {
+        trigger: ".cta-section",
+        start: "top center+=100",
+        toggleActions: "play none none reverse",
+      },
+    });
+
+    // Hover animations for cards
     document.querySelectorAll(".tool-card").forEach((card) => {
       card.addEventListener("mouseenter", () => {
         gsap.to(card, {
-          y: -8,
+          y: -10,
+          boxShadow: "0 20px 60px rgba(212, 175, 55, 0.3)",
           duration: 0.3,
           ease: "power2.out",
-        });
-        gsap.to(card.querySelector(".tool-icon"), {
-          scale: 1.3,
-          duration: 0.3,
-          ease: "back.out",
         });
       });
 
       card.addEventListener("mouseleave", () => {
         gsap.to(card, {
           y: 0,
+          boxShadow: "0 0px 0px rgba(212, 175, 55, 0)",
           duration: 0.3,
           ease: "power2.out",
-        });
-        gsap.to(card.querySelector(".tool-icon"), {
-          scale: 1,
-          duration: 0.3,
-          ease: "back.out",
         });
       });
     });
 
-    // Features section animation
-    gsap.from(".feature-card", {
-      opacity: 0,
-      y: 30,
-      duration: 0.6,
-      stagger: 0.1,
-      delay: 1,
-      ease: "power2.out",
-    });
-
-    // CTA section animation
-    gsap.from(".cta-section", {
-      opacity: 0,
-      y: 40,
-      duration: 0.8,
-      delay: 1.3,
-      ease: "power2.out",
-    });
+    return () => {
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+    };
   }, []);
 
   return (
-    <main ref={containerRef} className="min-h-screen pb-20 relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div ref={containerRef} className="min-h-screen pb-20 relative w-full bg-linear-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Animated background gradients */}
       <div className="fixed inset-0 -z-10">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-[#d4af37]/20 to-transparent rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gradient-to-br from-[#00d9ff]/20 to-transparent rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/3 w-96 h-96 bg-gradient-to-br from-[#8b5cf6]/10 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-linear-to-br from-[#d4af37]/20 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-linear-to-br from-[#00d9ff]/20 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/3 w-96 h-96 bg-linear-to-br from-[#8b5cf6]/10 to-transparent rounded-full blur-3xl"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-16">
+      <div className="max-w-7xl mx-auto px-6 py-16 w-full">
           {/* Hero Section */}
           <div className="text-center mb-20">
             <h1 className="hero-title text-6xl md:text-7xl font-bold mb-6 text-white leading-tight font-[var(--font-space-grotesk)]">
@@ -221,12 +230,12 @@ export default function Home() {
           </div>
 
           {/* Bento Grid */}
-          <div ref={toolsRef} className="grid md:grid-cols-3 gap-6 mb-20">
+          <div ref={toolsRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20 w-full">
             {tools.map((tool) => (
               <Link
                 key={tool.id}
                 href={tool.href}
-                className={`tool-card group bento-card ${tool.size}`}
+                className="tool-card group bento-card min-h-64 w-full"
               >
                 <div className="relative h-full overflow-hidden rounded-2xl transition-all duration-500 hover:shadow-2xl">
                   {/* Gradient Background */}
@@ -261,11 +270,11 @@ export default function Home() {
           </div>
 
           {/* Features Section */}
-          <div className="bg-gradient-to-br from-slate-900/50 via-purple-900/30 to-slate-900/50 rounded-2xl p-12 mb-16 border border-purple-500/20 backdrop-blur-sm">
+          <div className="features-section bg-gradient-to-br from-slate-900/50 via-purple-900/30 to-slate-900/50 rounded-2xl p-12 mb-16 border border-purple-500/20 backdrop-blur-sm">
             <h2 className="text-4xl font-bold text-white mb-12 text-center font-[var(--font-space-grotesk)]">
               Why Choose ImageLab?
             </h2>
-            <div className="grid md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
               {[
                 {
                   icon: "⚡",
@@ -326,7 +335,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-    </main>
+    </div>
   );
 }
 

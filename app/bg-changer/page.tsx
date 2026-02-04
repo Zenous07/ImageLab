@@ -293,12 +293,12 @@ export default function BgChangerPage() {
                     </div>
 
                     {/* Download Button */}
-                    {selectedColor && (
+                    {selectedColor && canvasRef.current && (
                       <button
                         onClick={handleDownload}
-                        className="w-full px-4 py-3 gradient-primary text-white font-bold rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 uppercase tracking-wide"
+                        className="w-full px-4 py-3 bg-gradient-to-r from-[#d4af37] to-[#00d9ff] text-slate-900 font-bold rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 uppercase tracking-wide"
                       >
-                        📥 Download
+                        📥 Download Image
                       </button>
                     )}
                   </>
@@ -314,17 +314,17 @@ export default function BgChangerPage() {
                   <span>📷</span> Original Image
                 </h2>
                 {image ? (
-                  <div className={`flex justify-center items-center bg-gradient-to-br from-slate-900/50 to-slate-800/50 rounded-xl p-8 min-h-72 border transition-all ${
+                  <div className={`flex justify-center items-center bg-gradient-to-br from-slate-900/50 to-slate-800/50 rounded-xl p-8 min-h-96 border transition-all ${
                     eyedropperMode ? "border-yellow-400 shadow-lg shadow-yellow-500/30 cursor-crosshair" : "border-white/10 hover:border-white/20 cursor-crosshair"
                   }`}>
                     <canvas
                       ref={originalCanvasRef}
                       onClick={handleCanvasClick}
-                      className="max-w-full max-h-80 rounded-lg shadow-2xl"
+                      className="max-w-full max-h-96 rounded-lg shadow-2xl"
                     />
                   </div>
                 ) : (
-                  <div className="flex flex-col justify-center items-center bg-gradient-to-br from-slate-900/50 to-slate-800/50 rounded-xl p-16 min-h-72 border-2 border-dashed border-white/20">
+                  <div className="flex flex-col justify-center items-center bg-gradient-to-br from-slate-900/50 to-slate-800/50 rounded-xl p-16 min-h-96 border-2 border-dashed border-white/20">
                     <div className="text-6xl mb-4">🖼️</div>
                     <p className="text-white/60 text-center">
                       Upload an image to start
@@ -339,10 +339,10 @@ export default function BgChangerPage() {
                   <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
                     <span>✨</span> Result
                   </h2>
-                  <div className="flex justify-center items-center bg-gradient-to-br from-slate-900/50 to-slate-800/50 rounded-xl p-8 min-h-72 border border-white/10 shadow-xl">
+                  <div className="flex justify-center items-center bg-gradient-to-br from-slate-900/50 to-slate-800/50 rounded-xl p-8 min-h-96 border border-white/10 shadow-xl">
                     <canvas
                       ref={canvasRef}
-                      className="max-w-full max-h-80 rounded-lg shadow-2xl"
+                      className="max-w-full max-h-96 rounded-lg shadow-2xl"
                     />
                   </div>
                 </div>
