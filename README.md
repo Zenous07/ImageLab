@@ -1,6 +1,24 @@
 ## Getting Started
 
-First, run the development server:
+First Clone the project :
+
+```bash
+git clone https://github.com/Zenous07/ImageLab.git
+```
+
+Then move into the directory:
+
+```bash
+cd ImageLab
+```
+
+Then install dependencies:
+
+```bash
+npm install
+```
+
+Next, run the development server:
 
 ```bash
 npm run dev
