@@ -1,0 +1,13 @@
+graph TB
+    A["Root Layout"] --> B["SidebarProvider"]
+    B --> C["Sidebar — fixed left, 16rem"]
+    B --> D["TopBar — fixed top"]
+    B --> E["LayoutContent — margin-left aware"]
+    E --> F["Page Content"]
+
+    style A fill:#1e293b,stroke:#d4af37,color:#fff
+    style B fill:#1e293b,stroke:#d4af37,color:#fff
+    style C fill:#1e293b,stroke:#00d9ff,color:#fff
+    style D fill:#1e293b,stroke:#00d9ff,color:#fff
+    style E fill:#1e293b,stroke:#8b5cf6,color:#fff
+    style F fill:#1e293b,stroke:#8b5cf6,color:#fff

@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant U as User
+    participant F as FileInput
+    participant FR as FileReader
+    participant S as React State
+    participant C as Canvas
+    participant IP as imageProcessing.ts
+    participant B as Browser
+
+    U->>F: Select Image File
+    F->>FR: readAsDataURL(file)
+    FR->>S: setImage(base64)
+    S->>C: img.onload then drawImage
+    
+    U->>S: Adjust Settings via sliders/presets
+    S->>IP: Process getFilterCSS / removeBackground / etc
+    IP->>C: Apply to Canvas ctx.filter / putImageData / drawImage
+    
+    U->>IP: Click Download
+    IP->>C: canvas.toBlob with mime and quality
+    C->>B: Blob then ObjectURL then anchor click
+    B->>U: File saved to disk

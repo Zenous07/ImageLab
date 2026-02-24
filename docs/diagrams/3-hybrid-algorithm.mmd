@@ -1,0 +1,27 @@
+flowchart TB
+    A["Input Image"] --> B["Build Color Histogram"]
+    B --> C["Identify Dominant\nBackground Color"]
+    
+    A --> D["For Each Pixel"]
+    C --> D
+    
+    D --> E["Color Score:\nEuclidean distance\nfrom BG color"]
+    D --> F["Contrast Score:\n3x3 neighbor\naverage difference"]
+    
+    E --> G["Combined Score =\ncolorScore + contrastScore / 2"]
+    F --> G
+    
+    G --> H{"combined > 0.3?"}
+    H -->|Yes| I["Set alpha based\non combined score"]
+    H -->|No| J["Keep opaque"]
+
+    style A fill:#1e293b,stroke:#d4af37,color:#fff
+    style B fill:#1e293b,stroke:#d4af37,color:#fff
+    style C fill:#1e293b,stroke:#d4af37,color:#fff
+    style D fill:#1e293b,stroke:#00d9ff,color:#fff
+    style E fill:#1e293b,stroke:#8b5cf6,color:#fff
+    style F fill:#1e293b,stroke:#8b5cf6,color:#fff
+    style G fill:#1e293b,stroke:#ff006e,color:#fff
+    style H fill:#1e293b,stroke:#ff006e,color:#fff
+    style I fill:#1e293b,stroke:#22c55e,color:#fff
+    style J fill:#1e293b,stroke:#22c55e,color:#fff

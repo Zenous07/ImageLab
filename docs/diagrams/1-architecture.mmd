@@ -1,0 +1,25 @@
+graph TB
+    subgraph Browser["Browser — Client-Side Only"]
+        A["Next.js App Router"] --> B["Root Layout"]
+        B --> C["SidebarProvider Context"]
+        C --> D["Sidebar"]
+        C --> E["TopBar"]
+        C --> F["LayoutContent"]
+        F --> G["Feature Pages"]
+        G --> H["imageProcessing.ts Core Library"]
+        H --> I["HTML5 Canvas API"]
+        I --> J["Blob / ObjectURL"]
+        J --> K["Download to Disk"]
+    end
+
+    style A fill:#1e293b,stroke:#d4af37,color:#fff
+    style B fill:#1e293b,stroke:#d4af37,color:#fff
+    style C fill:#1e293b,stroke:#00d9ff,color:#fff
+    style D fill:#1e293b,stroke:#00d9ff,color:#fff
+    style E fill:#1e293b,stroke:#00d9ff,color:#fff
+    style F fill:#1e293b,stroke:#00d9ff,color:#fff
+    style G fill:#1e293b,stroke:#8b5cf6,color:#fff
+    style H fill:#1e293b,stroke:#ff006e,color:#fff
+    style I fill:#1e293b,stroke:#ff006e,color:#fff
+    style J fill:#1e293b,stroke:#ff006e,color:#fff
+    style K fill:#1e293b,stroke:#d4af37,color:#fff

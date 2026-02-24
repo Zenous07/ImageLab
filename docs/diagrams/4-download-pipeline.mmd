@@ -1,0 +1,17 @@
+flowchart LR
+    A["Processed\nCanvas"] --> B["canvas.toBlob()"]
+    B --> C["Blob Object\nin memory"]
+    C --> D["URL.createObjectURL()"]
+    D --> E["Create anchor tag\nwith download attr"]
+    E --> F["Programmatic\na.click()"]
+    F --> G["Browser Downloads\nFile to Disk"]
+    G --> H["URL.revokeObjectURL\ncleanup"]
+
+    style A fill:#1e293b,stroke:#d4af37,color:#fff
+    style B fill:#1e293b,stroke:#00d9ff,color:#fff
+    style C fill:#1e293b,stroke:#00d9ff,color:#fff
+    style D fill:#1e293b,stroke:#8b5cf6,color:#fff
+    style E fill:#1e293b,stroke:#8b5cf6,color:#fff
+    style F fill:#1e293b,stroke:#ff006e,color:#fff
+    style G fill:#1e293b,stroke:#22c55e,color:#fff
+    style H fill:#1e293b,stroke:#22c55e,color:#fff

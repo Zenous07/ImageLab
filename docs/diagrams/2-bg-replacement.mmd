@@ -1,0 +1,11 @@
+flowchart LR
+    A["For each pixel"] --> B["Calculate Euclidean distance\nfrom selected color"]
+    B --> C{"distance < tolerance?"}
+    C -->|Yes| D["Set alpha = 0\ntransparent"]
+    C -->|No| E["Keep original"]
+
+    style A fill:#1e293b,stroke:#d4af37,color:#fff
+    style B fill:#1e293b,stroke:#00d9ff,color:#fff
+    style C fill:#1e293b,stroke:#8b5cf6,color:#fff
+    style D fill:#1e293b,stroke:#ff006e,color:#fff
+    style E fill:#1e293b,stroke:#22c55e,color:#fff
